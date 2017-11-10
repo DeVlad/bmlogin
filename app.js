@@ -11,17 +11,20 @@ app.use(express.static(__dirname + '/public'));
 // Initialize routes
 app.use('/', require('./routes/routes'));
 
-var mongoose = require('mongoose');
-var uri = 'mongodb://localhost/bmlogin';
-var options = {
-    useMongoClient: true,
-};
-
-mongoose.connect(uri, options, function(error) {
-    if(!error) {        
-        console.log('Database connection established');        
-    }
+var mysql = require('mysql')
+var connection = mysql.createConnection({
+  host     : 'localhost',
+  user     : 'bmlogin',
+  password : '',
+  database : 'bmlogin'
 });
+
+connection.connect(function(err) {
+  if (err) throw err;
+  console.log('Database connection established');
+})
+
+
 
 // Error handler
 app.use(function (err, req, res, next) {
