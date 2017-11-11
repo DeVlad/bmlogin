@@ -3,7 +3,9 @@ var express = require('express'),
     port = process.env.PORT || 8000;
 
 var bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
 
 // Handle static files before routes
 app.use(express.static(__dirname + '/public'));
@@ -11,19 +13,13 @@ app.use(express.static(__dirname + '/public'));
 // Initialize routes
 app.use('/', require('./routes/routes'));
 
-var mysql = require('mysql')
-var connection = mysql.createConnection({
-  host     : 'localhost',
-  user     : 'bmlogin',
-  password : '',
-  database : 'bmlogin'
+
+// Country module test
+var Country = require('./models/country');
+Country.getAllCountries(function (err, rows) {
+    if (err) throw err;
+    console.log(rows);
 });
-
-connection.connect(function(err) {
-  if (err) throw err;
-  console.log('Database connection established');
-})
-
 
 
 // Error handler
