@@ -28,16 +28,16 @@ User.getAllUsers(function (err, rows) {
         console.log('Error creating user');
         //throw err;
     }
-    // console.log(rows);
+    //console.log(rows);
 });
 
 function create() {
     var testUser = {
-        first_name: 'John',
+        first_name: 'Jane',
         last_name: 'Doe',
-        email: 'john@example.com',
-        password: 'bcryptjs',
-        age: 33,
+        email: 'jane@example.com',
+        password_hash: 'bcrypt',
+        age: 31,
         country_id: 1
     };
 
@@ -47,21 +47,25 @@ function create() {
     });
 }
 
-//create();
+create();
+
 function checkAccountExists() {
     var exists = true;
     // TODO: Make a Promise
-    User.checkUserEmailExists('john@example.coms', function (err, rows) {
+    var promise = User.checkUserEmailExists('john@example.coms', function (err, rows) {
         if (err) throw err;
         console.log('status', rows[0].result);
         if (rows[0].result == 'false') {
             exists = false;
         }
     });
-    console.log(exists);
-    return exists;
+    promise.then(console.log('done promise') )
+    console.log('done');
+    
 }
 //checkAccountExists();
+
+
 
 // Error handler
 app.use(function (err, req, res, next) {

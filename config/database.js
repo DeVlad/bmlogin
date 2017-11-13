@@ -3,7 +3,8 @@ var connection = mysql.createConnection({
     host: 'localhost',
     user: 'bmlogin',
     password: '',
-    database: 'bmlogin'
+    database: 'bmlogin',
+    multipleStatements: true
 });
 
 connection.connect(function (err) {
