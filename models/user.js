@@ -6,13 +6,14 @@ var User = {
     },
     createUser: function (User, callback) {
         //console.log(User);        
-        return db.query("START TRANSACTION; INSERT INTO user (first_name, last_name, email, password_hash, age, country_id) VALUES (?,?,?,?,?,?); INSERT INTO log (failed_login) VALUES (0); COMMIT", [User.first_name, User.last_name, User.email, User.password_hash, User.age, User.country_id], callback);
+        return db.query("START TRANSACTION; INSERT INTO user (first_name, last_name, email, password_hash, age, country_id) VALUES (?,?,?,?,?,?); INSERT INTO log (user_id) SELECT id FROM user WHERE email=?; COMMIT", [User.first_name, User.last_name, User.email, User.password_hash, User.age, User.country_id, User.email], callback);
     },
-    deleteUser: function (id, callback) {
-        return db.query('DELETE FROM user WHERE id=?', [id], callback);
+    deleteUser: function (Id, callback) {
+        //console.log("ID: ", id);
+        return db.query("START TRANSACTION; DELETE FROM user WHERE id=?; DELETE FROM log WHERE user_id=?; COMMIT", [Id, Id], callback);
     },
-    checkUserEmailExists: function (email, callback) {
-        return db.query("SELECT IF(EXISTS(SELECT email from user where email=?),'true','false') AS result", [email], callback);
+    checkUserEmailExists: function (Email, callback) {
+        return db.query("SELECT IF(EXISTS(SELECT email from user where email=?),'true','false') AS result", [Email], callback);
     }
 };
 
