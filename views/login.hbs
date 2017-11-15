@@ -1,19 +1,17 @@
 <div class="row">
-    <form class="col s12">
-
+    <form action="/login" method="post">
         <div class="row">
             <div class="input-field col s12">
-                <input id="email" type="email" class="validate" required aria-required="true">
+                <input type="email" name="user" class="validate">
                 <label for="email">Email</label>
             </div>
         </div>
-
         <div class="row">
             <div class="input-field col s12">
-                <input id="password" type="password" class="validate" required aria-required="true">
+                <input type="password" name="password" class="validate" pattern="^(?=(.*[A-Z]){2})(?=(.*[a-z]){2})(?=(.*[0-9]){2})(?=(.*[!#$%^&*()+_]){2}).{8,}$" required aria-required="true">
                 <label for="password">Password</label>
             </div>
         </div>
-        <button type="submit" class="btn">Login</button>
+        <input type="submit" id="login-btn" class="btn waves-effect waves-light" value="Login">
     </form>
 </div>

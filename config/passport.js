@@ -8,10 +8,12 @@ module.exports = function (passport) {
     // Serialize user for the session
     passport.serializeUser(function (user, done) {
         done(null, user.id);
+        console.log("serialize");
     });
 
     // Deserialize user
     passport.deserializeUser(function (id, done) {
+        console.log("deserialize");
         db.query("SELECT * FROM users WHERE id = ? ", [id], function (err, rows) {
             done(err, rows[0]);
         });

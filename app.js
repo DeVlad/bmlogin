@@ -3,17 +3,36 @@ var express = require('express'),
     port = process.env.PORT || 8000;
 
 var path = require('path');
-var flash = require('connect-flash');
-
+var session  = require('express-session');
+var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var passport = require('passport');
+var flash = require('connect-flash');
+var exphbs  = require('express-handlebars');
+
+require('./config/passport')(passport);
+
+app.use(cookieParser());
+
+// configure the app to use bodyParser()
 app.use(bodyParser.urlencoded({
     extended: true
 }));
+app.use(bodyParser.json());
 
 // View engine
-var exphbs  = require('express-handlebars');
 app.engine('.hbs', exphbs({extname: '.hbs', defaultLayout: 'layout'}));
 app.set('view engine', '.hbs');
+
+app.use(session({
+	secret: 'putyoursecretshere',
+	resave: true,
+	saveUninitialized: true
+ } ));
+app.use(passport.initialize());
+app.use(passport.session()); 
+app.use(flash());
+
 
 // Handle static files before routes
 app.use(express.static(__dirname + '/public'));
