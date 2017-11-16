@@ -1,1 +1,31 @@
-<h2>Wellcome to your profile</h2>
+<h2>Wellcome {{user.first_name}} to your profile</h2>
+
+
+{{#if user.id}}
+<div class="row">
+    <strong>Account information:</strong>
+    <div class="blue cyan lighten-5">User Id: {{user.id}}</div>
+    <div class="blue cyan lighten-5">First name: {{user.first_name}}</div>
+    <div class="blue cyan lighten-5">Last name: {{user.last_name}}</div>
+    <div class="blue cyan lighten-5">email: {{user.email}}</div>
+</div>
+{{/if}}
+
+<div class="row">
+        <div class="row">
+            <a href="/logout" class="btn">Logout</a>
+        </div>
+    </div>
+<div class="col">
+    <form class="col s12 m4" action="/profile/biography" method="post">
+        <div class="row">
+            <div class="input-field col s12 m4">
+                <textarea id="biography" class="materialize-textarea"></textarea>
+                <label for="biography" class='active'>Biography</label>
+            </div>
+            
+        </div>
+     <input type="submit" id="login-btn" class="btn waves-effect waves-light" value="Save Biography">   
+    </form>
+</div>
+    

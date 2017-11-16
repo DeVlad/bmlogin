@@ -1,102 +1,122 @@
-var express = require('express');    
-var router = express.Router();
-var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
+var form = require('express-form'),
+    field = form.field,
+    validate = form.validate;
 
-router.get('/', function (req, res, next) {
-    res.render('index', {
-        title: 'BM Login'
+module.exports = function (app, passport) {
+
+    app.get('/', function (req, res) {
+        res.render('index');
     });
-});
 
-router.get('/signup', function (req, res, next) {
-    res.render('signup', {
-        title: 'Create New User Account'
+    app.get('/login', function (req, res) {
+        // render the page and pass in any flash data if it exists
+        res.render('login', {
+            message: req.flash('loginMessage')
+        });
     });
-});
 
-router.get('/login', function (req, res, next) {
-    res.render('login', {
-        title: 'BM Login'
+    app.post('/login', passport.authenticate('local-login', {
+            successRedirect: '/profile', // redirect to the secure profile section
+            failureRedirect: '/login', // redirect back to the signup page if there is an error
+            failureFlash: true // allow flash messages
+        }),
+        function (req, res) {
+            console.log("login");
+
+            if (req.body.remember) {
+                req.session.cookie.maxAge = 1000 * 60 * 3;
+            } else {
+                req.session.cookie.expires = false;
+            }
+            res.redirect('/');
+        });
+
+    app.get('/signup', function (req, res) {
+        res.render('signup', {
+            message: req.flash('signupMessage')
+        });
     });
-});
 
-router.post('/login', passport.authenticate('local-login', {
-        successRedirect: '/profile', // Redirect to the secure profile
-        failureRedirect: '/login', // If error redirect to login
-        failureFlash: true // Flash messages
-    }),
-    function (req, res) {
-        console.log("auth");
-        if (req.body.remember) {
-            req.session.cookie.maxAge = 1000 * 60 * 3;
-        } else {
-            req.session.cookie.expires = false;
+    app.post(
+        '/signup',
+        // Form filter and validation
+        form(
+            field("firstName").trim().required().is(/^[A-z]+$/),
+            field("lastName").trim().required().is(/^[A-z]+$/),
+            field("password").trim().required().is(/^(?=(.*[A-Z]){2})(?=(.*[a-z]){2})(?=(.*[0-9]){2})(?=(.*[!#$%^&*()+_]){2}).{8,}$/),
+            field("email").trim().required().isEmail(),
+            field("country").trim().required().isInt().is(/^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/), // id between 0-255
+            validate("rpassword").equals("field::password")
+        ),
+
+        // Express request-handler now receives filtered and validated data 
+        function (req, res) {
+            // Set age to null                
+            // TODO: validate country id if exist in db
+            var age = Number(req.body.age);
+            if (!age > 0 && age <= 120) {
+                req.body.age = null;
+                //console.log('Set age to null', req.body.age);
+            }
+
+            if (!req.form.isValid) {
+                // Handle errors 
+                console.log(req.form.errors);
+
+            } else {
+                console.log(req.body.firstName);
+                console.log(req.body.lastName);
+                console.log(req.body.age);
+                console.log(req.body.country);
+                console.log(req.body.email);
+                console.log(req.body.password);
+                console.log(req.body.rpassword)
+                console.log("Valid - Go to pasport");
+                passport.authenticate('local-signup', {
+                    successRedirect: '/profile',
+                    failureRedirect: '/signup',
+                    failureFlash: true
+                })(req, res);
+            }
         }
+    );
+
+    app.get('/profile', isLoggedIn, function (req, res) {
+        console.log(req.user);
+        res.render('profile', {
+            user: req.user // get the user out of session and pass to template
+        });
+    });
+
+    app.get('/logout', function (req, res) {
+        req.logout();
         res.redirect('/');
     });
 
-// Test signup
-/*router.post('/signup', function (req, res) {
-   // console.log(req.body);    
-    req.flash('User Account Created');
-    res.redirect('/login');
-});*/
-
-// Test login
-/*router.post('/login', function (req, res) {
-    console.log(req.body); 
-    
-    res.redirect('/profile');
-});*/
-
-router.get('/profile', isLoggedIn, function (req, res) {
-    console.log("isLoggedIn")
-    res.render('/profile', {
-        user: req.user
+    app.get('/locked', function (req, res, next) {
+        res.render('locked', {
+            title: 'Account lock'
+        });
     });
-});
 
-router.get('/locked', function (req, res, next) {
-    res.render('locked', {
-        title: 'Account lock'
+    // Country form data. TODO: Change to post
+    var Country = require('../models/country');
+    app.get('/country', function (req, res, next) {
+        var list = [];
+        Country.getAllCountries(function (err, rows) {
+            if (err) throw err;
+            list = JSON.stringify(rows);
+            res.send(list);
+        });
     });
-});
 
-router.get('/logout', function (req, res, next) {
-    console.log("logout");
-    req.logout();
-    res.redirect('/');
-});
+};
 
+// Make sure the user is logged
 function isLoggedIn(req, res, next) {
-
-    // if user is authenticated
+    // if user is authenticated in the session, carry on
     if (req.isAuthenticated())
         return next();
-
-    // No auth- redirect to home
+    // if user is not logged redirect to home page
     res.redirect('/');
 }
-// Country form data. Change to post and fetch from db
-var Country = require('../models/country');
-router.get('/country', function (req, res, next) {
-    var list = [];
-    Country.getAllCountries(function (err, rows) {
-        if (err) throw err;
-        list = JSON.stringify(rows);
-        res.send(list);
-    });
-});
-
-// Handle missing favicon
-router.get('/favicon.ico', function (req, res, next) {
-    res.status(204);
-});
-
-// Return 404 on missing pages
-router.get('*', function (req, res) {
-    res.status(404).send('Error: 404. Page not found !');
-});
-
-module.exports = router;

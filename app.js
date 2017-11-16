@@ -1,115 +1,53 @@
-var express = require('express'),
-    app = express(),
-    port = process.env.PORT || 8000;
+var express = require('express');
+var app = express();
+var port = process.env.PORT || 8000;
 
 var path = require('path');
-var session  = require('express-session');
+var session = require('express-session');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
+var exphbs = require('express-handlebars');
 var flash = require('connect-flash');
-var exphbs  = require('express-handlebars');
 
 require('./config/passport')(passport);
 
+// Read cookies
 app.use(cookieParser());
 
-// configure the app to use bodyParser()
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(bodyParser.json());
 
 // View engine
-app.engine('.hbs', exphbs({extname: '.hbs', defaultLayout: 'layout'}));
+app.engine('.hbs', exphbs({
+    extname: '.hbs',
+    defaultLayout: 'layout'
+}));
 app.set('view engine', '.hbs');
 
+// Required for passport
 app.use(session({
-	secret: 'putyoursecretshere',
-	resave: true,
-	saveUninitialized: true
- } ));
-app.use(passport.initialize());
-app.use(passport.session()); 
-app.use(flash());
+    secret: 'ItsVerySecretChangeStoreItInEnvVariableInProduction!',
+    resave: true,
+    saveUninitialized: true
+}));
 
+app.use(passport.initialize());
+
+// Persistent login sessions
+app.use(passport.session());
+
+// Flash messages stored in session
+app.use(flash());
 
 // Handle static files before routes
 app.use(express.static(__dirname + '/public'));
 
-// Initialize routes
-app.use('/', require('./routes/routes'));
+// Routes
+require('./routes/routes.js')(app, passport);
 
-
-/*// Country module test
-var Country = require('./models/country');
-Country.getAllCountries(function (err, rows) {
-    if (err) throw err;
-    //console.log(rows);
-});
-
-// User module test
-var User = require('./models/user');
-User.getAllUsers(function (err, rows) {
-    if (err) {
-        console.log('Error creating user');
-        //throw err;
-    }
-    //console.log(rows);
-});*/
-
-function create() {
-    var testUser = {
-        first_name: 'Prazz',
-        last_name: 'Doe',
-        email: 'prazz@example.com',
-        password_hash: 'bcrypt',
-        age: 31,
-        country_id: 1
-    };
-
-    User.createUser(testUser, function (err, rows) {
-        if (err) throw err;
-        //console.log(rows);
-    });
-}
-
-//create();
-
-function eraseUser() {
-    var id = 8;
-    User.deleteUser(id, function (err, rows) {
-        if (err) throw err;
-        //console.log(rows);
-    });
-
-}
-//eraseUser();
-
-function checkAccountExists() {
-    var exists = true;
-    // TODO: Make a Promise
-    var promise = User.checkUserEmailExists('john@example.com', function (err, rows) {
-        if (err) throw err;
-        console.log('status', rows[0].result);
-        if (rows[0].result == 'false') {
-            exists = false;
-        }
-    });
-    promise.then(console.log('done promise'))
-    console.log('done');
-
-}
-//checkAccountExists();
-
-// Error handler
-app.use(function (err, req, res, next) {
-    // if URIError occurs
-    if (err instanceof URIError) {
-        err.message = 'Failed to decode param at: ' + req.url;
-        err.status = err.statusCode = 400;
-        return res.send('Error: ' + err.status + '<br>' + err.message);
-    }
-});
-
-app.listen(port, console.log('Listening on port:', port));
+// Start server
+app.listen(port);
+console.log('Server is running on: ' + port);

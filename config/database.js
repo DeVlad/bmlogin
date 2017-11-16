@@ -1,15 +1,12 @@
-var mysql = require('mysql')
-var connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'bmlogin',
-    password: '',
-    database: 'bmlogin',
-    multipleStatements: true
-});
+// Database configuration
 
-connection.connect(function (err) {
-    if (err) throw err;
-    console.log('Database connection established');
-});
-
-module.exports = connection;
+module.exports = {
+    'connection': {
+        'host': 'localhost',
+        'user': 'login',
+        'password': '',
+        'multipleStatements': 'true'
+    },
+    'database': 'login',
+    'users_table': 'users'
+};
