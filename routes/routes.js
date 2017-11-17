@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var bcrypt = require('bcrypt-nodejs');
 var form = require('express-form2'),
     filter = form.filter,
     field = form.field,
@@ -11,6 +12,7 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 var UserProfile = require('../models/user_profile');
+var User = require('../models/user');
 
 module.exports = function (app, passport) {
 
@@ -86,7 +88,7 @@ module.exports = function (app, passport) {
     );
 
     app.get('/profile', isLoggedIn, function (req, res) {
-        // console.log(req.user);
+
         res.render('profile', {
             user: req.user // get the user out of session and pass to template
         });
@@ -103,7 +105,6 @@ module.exports = function (app, passport) {
                 //TODO: flash messages
                 return res.redirect('/profile');
             }
-
             if (req.body.bio) {
                 var newBiography = {
                     id: req.user.id,
@@ -114,6 +115,49 @@ module.exports = function (app, passport) {
                 });
             }
             res.render('profile', {
+                user: req.user
+            });
+        });
+
+    app.get('/profile/password', isLoggedIn, function (req, res) {
+
+        res.render('password', {
+            user: req.user // get the user out of session and pass to template
+        });
+    });
+
+    app.post('/profile/password', isLoggedIn, form(
+            // TODO - better verify input and filter
+            //field("bio").entityEncode().trim().required().max(1000)
+            field('npassword').is(/^(?=(.*[A-Z]){2})(?=(.*[a-z]){2})(?=(.*[0-9]){2})(?=(.*[!#$%^&*()+_]){2}).{8,}$/),
+            validate('cpassword').equals('field::npassword')
+        ),
+        function (req, res) {
+            if (!req.form.isValid) {
+               // console.log(req.form.errors);
+                //TODO: flash messages
+                return res.redirect('/profile/password');
+            }        
+            var oldPassword = req.body.opassword;
+            var newPassword = req.body.npassword;
+            var oldHash = req.user.password;        
+            var newHash;
+
+            if (!bcrypt.compareSync(oldPassword,oldHash)) {                
+                req.flash('changePassMessage', 'The current password is wrong !');
+                res.redirect('/profile/password');
+            } else {
+                newHash = bcrypt.hashSync(newPassword, null, null);
+                var newCredentials = {
+                    password: newHash,
+                    id: req.user.id
+                };                
+                // Save new hashed password
+                User.updatePassword(newCredentials, function (err, rows) {
+                    if (err) throw err;
+                });
+            }
+            res.render('password', {
                 user: req.user
             });
         });

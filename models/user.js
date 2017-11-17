@@ -15,9 +15,12 @@ var User = {
         return connection.query('SELECT * FROM user WHERE email = ?', [Email], callback);
     },
     createUser: function (User, callback) {
-       // console.log('create user');
+        // console.log('create user');
         //console.log(User);        
         return connection.query("START TRANSACTION; INSERT INTO user (first_name, last_name, email, password, age, country_id) VALUES (?,?,?,?,?,?); INSERT INTO log (user_id) SELECT id FROM user WHERE email=?; INSERT INTO user_profile (user_id) SELECT id FROM user WHERE email=?; COMMIT", [User.first_name, User.last_name, User.email, User.password, User.age, User.country_id, User.email, User.email], callback);
+    },
+    updatePassword: function (User, callback) {
+        return connection.query("UPDATE user SET password = ? WHERE id=?", [User.password, User.id], callback);
     },
     deleteUser: function (Id, callback) {
         //console.log("ID: ", id);
