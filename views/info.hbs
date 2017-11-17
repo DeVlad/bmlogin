@@ -1,0 +1,61 @@
+
+<nav>
+    <div class="nav-wrapper">
+        <a href="#" class="brand-logo"></a>
+        <ul id="nav-mobile">
+            <li><a href="/">Home</a></li>
+            <li><a href="/profile">Profile</a></li>            
+            <li><a href="/profile/password">Password</a></li>
+            <li><a href="/profile/info">Account</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+
+<h2>{{user.first_name}} you can change your personal information</h2>
+
+<div class="row">
+    <form action="/signup" method="post">
+        <div class="row">
+            <div class="input-field col s12 m4">
+                <input type="text" name="nfirstName" id="first_name" class="validate" pattern="^[A-z]+$" required aria-required="true">
+                <label for="first_name">First Name</label>
+            </div>
+
+            <div class="input-field col s12 m4">
+                <input type="text" name="nlastName" id="last_name" class="validate" pattern="^[A-z]+$" required aria-required="true">
+                <label for="first_name">Last Name</label>
+            </div>
+
+            <div class="input-field col s12 m1">
+                <input type="text" name="nage" id="age" class="validate" default="" pattern="^(120|[1-9]?[0-9])$">
+                <label for="age">Age</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-field col s12 m4">
+                <input type="email" name="nemail" id="email" class="validate" required aria-required="true">
+                <label for="email">Email</label>
+            </div>
+       
+            <div class="input-field col s12 m4">
+                <select name="ncountry" id="country" required aria-required="true">
+                    <option value="" disabled selected>Select your country</option>                   
+                </select>
+            </div>
+        </div>      
+        
+        <input type="submit" id="change-btn" class="btn waves-effect waves-light" onclick="" value="Save Changes">
+    </form>
+</div>
+{{#if message}}
+<div class="red lighten-4">{{message}}</div>
+{{/if}}
+
+<script>
+    $(document).ready(function() {
+        $('select').material_select();
+    });
+
+</script>
+<script src="../js/getCountryList.js"></script>

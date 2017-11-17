@@ -161,6 +161,13 @@ module.exports = function (app, passport) {
                 user: req.user
             });
         });
+    
+    app.get('/profile/info', isLoggedIn, function (req, res) {
+
+        res.render('info', {
+            user: req.user // get the user out of session and pass to template
+        });
+    });
 
     app.get('/logout', function (req, res) {
         req.logout();

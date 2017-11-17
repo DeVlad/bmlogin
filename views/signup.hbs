@@ -2,7 +2,7 @@
     <form action="/signup" method="post">
         <div class="row">
             <div class="input-field col s12 m4">
-                <input type="text" name="firstName" id="first_name" class="validate" pattern="^[A-z]+$" required aria-required="true" value="First">
+                <input type="text" name="firstName" id="first_name" class="validate" pattern="^[A-z]+$" required aria-required="true">
                 <label for="first_name">First Name</label>
             </div>
 
@@ -16,18 +16,17 @@
                 <label for="age">Age</label>
             </div>
         </div>
-        <div class="row">
-            <div class="input-field col s12 m4">
-                <select name="country" id="country" required aria-required="true">
-                    <option value="" disabled selected>Select your country</option>                   
-                </select>
-            </div>
-        </div>
 
         <div class="row">
             <div class="input-field col s12 m4">
                 <input type="email" name="email" id="email" class="validate" required aria-required="true">
                 <label for="email">Email</label>
+            </div>
+
+            <div class="input-field col s12 m4">
+                <select name="country" id="country" required aria-required="true">
+                    <option value="" disabled selected>Select your country</option>                   
+                </select>
             </div>
         </div>
         <div class="row">
@@ -54,4 +53,3 @@
 
 </script>
 <script src="../js/getCountryList.js"></script>
-
