@@ -1,5 +1,14 @@
-<h2>Wellcome {{user.first_name}} to your profile</h2>
+<nav>
+    <div class="nav-wrapper">
+        <a href="#" class="brand-logo"></a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+            <li><a href="/">Home</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </div>
+</nav>
 
+<h2>Wellcome {{user.first_name}} to your profile</h2>
 
 {{#if user.id}}
 <div class="row">
@@ -11,21 +20,26 @@
 </div>
 {{/if}}
 
-<div class="row">
-        <div class="row">
-            <a href="/logout" class="btn">Logout</a>
-        </div>
-    </div>
 <div class="col">
-    <form class="col s12 m4" action="/profile/biography" method="post">
+    <form class="col s12 m4" action="/profile" method="post">
         <div class="row">
             <div class="input-field col s12 m4">
-                <textarea id="biography" class="materialize-textarea"></textarea>
+                <textarea id="biography" name="bio" class="materialize-textarea" data-length="1000">{{user.biography}}</textarea>
                 <label for="biography" class='active'>Biography</label>
             </div>
-            
         </div>
-     <input type="submit" id="login-btn" class="btn waves-effect waves-light" value="Save Biography">   
+        <input type="submit" id="login-btn" class="btn waves-effect waves-light" value="Save Biography">
     </form>
 </div>
-    
+<script>
+    $(document).ready(function() {
+        $('input#input_text, textarea#biography').characterCounter();
+        
+        $(":submit").click(function() {            
+            setTimeout(function() {
+                window.location.reload();
+            }, 1000);
+        });
+    });
+
+</script>

@@ -1,6 +1,16 @@
-var form = require('express-form'),
+var express = require('express');
+var bodyParser = require('body-parser');
+var form = require('express-form2'),
+    filter = form.filter,
     field = form.field,
     validate = form.validate;
+var app = express();
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+app.use(bodyParser.json());
+
+var UserProfile = require('../models/user_profile');
 
 module.exports = function (app, passport) {
 
@@ -9,20 +19,17 @@ module.exports = function (app, passport) {
     });
 
     app.get('/login', function (req, res) {
-        // render the page and pass in any flash data if it exists
         res.render('login', {
             message: req.flash('loginMessage')
         });
     });
 
     app.post('/login', passport.authenticate('local-login', {
-            successRedirect: '/profile', // redirect to the secure profile section
-            failureRedirect: '/login', // redirect back to the signup page if there is an error
-            failureFlash: true // allow flash messages
+            successRedirect: '/profile',
+            failureRedirect: '/login',
+            failureFlash: true // Allow flash messages
         }),
         function (req, res) {
-            console.log("login");
-
             if (req.body.remember) {
                 req.session.cookie.maxAge = 1000 * 60 * 3;
             } else {
@@ -39,8 +46,9 @@ module.exports = function (app, passport) {
 
     app.post(
         '/signup',
-        // Form filter and validation
+        // Form filter and validation        
         form(
+            //filter("email").trim().toLowercase(), // Not Working !
             field("firstName").trim().required().is(/^[A-z]+$/),
             field("lastName").trim().required().is(/^[A-z]+$/),
             field("password").trim().required().is(/^(?=(.*[A-Z]){2})(?=(.*[a-z]){2})(?=(.*[0-9]){2})(?=(.*[!#$%^&*()+_]){2}).{8,}$/),
@@ -51,30 +59,26 @@ module.exports = function (app, passport) {
 
         // Express request-handler now receives filtered and validated data 
         function (req, res) {
-            // Set age to null                
+            // Additional validations
             // TODO: validate country id if exist in db
+
+            // Set age to null           
             var age = Number(req.body.age);
             if (!age > 0 && age <= 120) {
                 req.body.age = null;
-                //console.log('Set age to null', req.body.age);
             }
+            req.body.email = req.body.email.toLowerCase();
 
             if (!req.form.isValid) {
                 // Handle errors 
-                console.log(req.form.errors);
+                //console.log(req.form.errors);
+                //TODO: flash messages
+                res.redirect('/signup');
 
             } else {
-                console.log(req.body.firstName);
-                console.log(req.body.lastName);
-                console.log(req.body.age);
-                console.log(req.body.country);
-                console.log(req.body.email);
-                console.log(req.body.password);
-                console.log(req.body.rpassword)
-                console.log("Valid - Go to pasport");
                 passport.authenticate('local-signup', {
-                    successRedirect: '/profile',
-                    failureRedirect: '/signup',
+                    successRedirect: '/login',
+                    failureRedirect: '/login', // TODO: Why return fail when is success?
                     failureFlash: true
                 })(req, res);
             }
@@ -82,11 +86,37 @@ module.exports = function (app, passport) {
     );
 
     app.get('/profile', isLoggedIn, function (req, res) {
-        console.log(req.user);
+        // console.log(req.user);
         res.render('profile', {
             user: req.user // get the user out of session and pass to template
         });
     });
+
+
+    app.post('/profile', isLoggedIn, form(
+            // TODO - netter verify input and filter
+            field("bio").entityEncode().trim().required().max(1000)
+        ),
+        function (req, res) {
+            if (!req.form.isValid) {
+                //console.log(req.form.errors);
+                //TODO: flash messages
+                return res.redirect('/profile');
+            }
+
+            if (req.body.bio) {
+                var newBiography = {
+                    id: req.user.id,
+                    biography: req.body.bio
+                };
+                UserProfile.updateBiography(newBiography, function (err, rows) {
+                    if (err) throw err;
+                });
+            }
+            res.render('profile', {
+                user: req.user
+            });
+        });
 
     app.get('/logout', function (req, res) {
         req.logout();
@@ -99,7 +129,7 @@ module.exports = function (app, passport) {
         });
     });
 
-    // Country form data. TODO: Change to post
+    // Country form data
     var Country = require('../models/country');
     app.get('/country', function (req, res, next) {
         var list = [];
@@ -109,9 +139,9 @@ module.exports = function (app, passport) {
             res.send(list);
         });
     });
-
 };
 
+// Is authenticated policy
 // Make sure the user is logged
 function isLoggedIn(req, res, next) {
     // if user is authenticated in the session, carry on
