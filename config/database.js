@@ -3,10 +3,9 @@
 module.exports = {
     'connection': {
         'host': 'localhost',
-        'user': 'login',
+        'user': 'root',
         'password': '',
         'multipleStatements': 'true'
     },
-    'database': 'login',
-    'users_table': 'users'
+    'database': 'login'    
 };

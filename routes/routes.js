@@ -177,7 +177,7 @@ module.exports = function (app, passport) {
             field("nfirstName").trim().required().is(/^[A-z]+$/),
             field("nlastName").trim().required().is(/^[A-z]+$/),
             field("nemail").trim().required().isEmail(),
-            field("ncountry").trim().required().isInt().is(/^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/), // id between 0-255      
+            field("ncountry").trim().required().isInt().is(/^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/) // id between 0-255      
         ),
 
         // Express request-handler now receives filtered and validated data 
