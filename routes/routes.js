@@ -96,7 +96,7 @@ module.exports = function (app, passport) {
 
 
     app.post('/profile', isLoggedIn, form(
-            // TODO - netter verify input and filter
+            // TODO - better verify input and filter
             field("bio").entityEncode().trim().required().max(1000)
         ),
         function (req, res) {
@@ -122,7 +122,7 @@ module.exports = function (app, passport) {
     app.get('/profile/password', isLoggedIn, function (req, res) {
 
         res.render('password', {
-            user: req.user // get the user out of session and pass to template
+            user: req.user
         });
     });
 
@@ -134,16 +134,16 @@ module.exports = function (app, passport) {
         ),
         function (req, res) {
             if (!req.form.isValid) {
-               // console.log(req.form.errors);
+                // console.log(req.form.errors);
                 //TODO: flash messages
                 return res.redirect('/profile/password');
-            }        
+            }
             var oldPassword = req.body.opassword;
             var newPassword = req.body.npassword;
-            var oldHash = req.user.password;        
+            var oldHash = req.user.password;
             var newHash;
 
-            if (!bcrypt.compareSync(oldPassword,oldHash)) {                
+            if (!bcrypt.compareSync(oldPassword, oldHash)) {
                 req.flash('changePassMessage', 'The current password is wrong !');
                 res.redirect('/profile/password');
             } else {
@@ -151,7 +151,7 @@ module.exports = function (app, passport) {
                 var newCredentials = {
                     password: newHash,
                     id: req.user.id
-                };                
+                };
                 // Save new hashed password
                 User.updatePassword(newCredentials, function (err, rows) {
                     if (err) throw err;
@@ -161,13 +161,59 @@ module.exports = function (app, passport) {
                 user: req.user
             });
         });
-    
-    app.get('/profile/info', isLoggedIn, function (req, res) {
 
+    app.get('/profile/info', isLoggedIn, function (req, res) {
+        // TODO Get user data from db
+        //console.log("GET: INFO", req.user);
         res.render('info', {
-            user: req.user // get the user out of session and pass to template
+            user: req.user
         });
     });
+
+    app.post(
+        '/profile/info',
+        // Form filter and validation        
+        form(
+            field("nfirstName").trim().required().is(/^[A-z]+$/),
+            field("nlastName").trim().required().is(/^[A-z]+$/),
+            field("nemail").trim().required().isEmail(),
+            field("ncountry").trim().required().isInt().is(/^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/), // id between 0-255      
+        ),
+
+        // Express request-handler now receives filtered and validated data 
+        function (req, res) {
+            // Additional validations
+            // TODO: validate country id if exist in db
+
+            // Set age to null           
+            var age = Number(req.body.nage);
+            if (!age > 0 && age <= 120) {
+                req.body.nage = null;
+            }
+            if (!req.form.isValid) {
+                // Handle errors 
+                //console.log(req.form.errors);
+                //TODO: flash messages
+                return res.redirect('/profile/info');
+            }
+
+            var newInfo = {
+                id: req.user.id,
+                first_name: req.body.nfirstName,
+                last_name: req.body.nlastName,
+                email: req.body.nemail,
+                age: req.body.nage,
+                country_id: req.body.ncountry
+            };
+            //console.log(newInfo);            
+            User.updateInfo(newInfo, function (err, rows) {
+                if (err) throw err;
+            });
+            res.render('info', {
+                user: req.user
+            });
+        }
+    );
 
     app.get('/logout', function (req, res) {
         req.logout();

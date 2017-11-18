@@ -13,17 +13,6 @@
 
 <h2>Wellcome to your profile {{user.first_name}}</h2>
 
-{{#if user.id}}
-<div class="row">
-    <strong>Account information:</strong>
-    <div class="blue cyan lighten-5">User Id: {{user.id}}</div>
-    <div class="blue cyan lighten-5">First name: {{user.first_name}}</div>
-    <div class="blue cyan lighten-5">Last name: {{user.last_name}}</div>
-    <div class="blue cyan lighten-5">email: {{user.email}}</div>
-    <div class="blue cyan lighten-5">password: {{user.password}}</div>
-</div>
-{{/if}}
-
 <div class="col">
     <form class="col s12 m4" action="/profile" method="post">
         <div class="row">
@@ -33,6 +22,7 @@
             </div>
         </div>
         <input type="submit" id="login-btn" class="btn waves-effect waves-light" value="Save Biography">
+        <p>NOTE: Refresh the page after form submission.TODO: ajax</p>
     </form>
 </div>
 {{#if message}}
@@ -41,12 +31,5 @@
 <script>
     $(document).ready(function() {
         $('input#input_text, textarea#biography').characterCounter();
-
-        $("#login.btn").click(function() {
-            setTimeout(function() {
-                window.location.reload();
-            }, 1000);
-        });
     });
-
 </script>

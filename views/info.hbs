@@ -1,10 +1,9 @@
-
 <nav>
     <div class="nav-wrapper">
         <a href="#" class="brand-logo"></a>
         <ul id="nav-mobile">
             <li><a href="/">Home</a></li>
-            <li><a href="/profile">Profile</a></li>            
+            <li><a href="/profile">Profile</a></li>
             <li><a href="/profile/password">Password</a></li>
             <li><a href="/profile/info">Account</a></li>
             <li><a href="/logout">Logout</a></li>
@@ -12,42 +11,55 @@
     </div>
 </nav>
 
-<h2>{{user.first_name}} you can change your personal information</h2>
+<h2>Account information </h2>
+<div class="row">
+    <div class="blue cyan lighten-5">User Id: {{user.id}}</div>
+    <div class="blue cyan lighten-5">First name: {{user.first_name}}</div>
+    <div class="blue cyan lighten-5">Last name: {{user.last_name}}</div>
+    <div class="blue cyan lighten-5">Email: {{user.email}}</div>
+    <div class="blue cyan lighten-5">Age: {{user.age}}</div>
+    <div class="blue cyan lighten-5">Country: <span id="usercountry">{{user.country_id}}</span></div>
+</div>
 
 <div class="row">
-    <form action="/signup" method="post">
+    <strong>{{user.first_name}} you can change your personal information.</strong><br>
+    <hr>
+    <form action="/profile/info" method="post">
         <div class="row">
             <div class="input-field col s12 m4">
-                <input type="text" name="nfirstName" id="first_name" class="validate" pattern="^[A-z]+$" required aria-required="true">
+
+                <input type="text" name="nfirstName" id="first_name" class="validate" pattern="^[A-z]+$" required aria-required="true" value="{{user.first_name}}">
                 <label for="first_name">First Name</label>
             </div>
 
             <div class="input-field col s12 m4">
-                <input type="text" name="nlastName" id="last_name" class="validate" pattern="^[A-z]+$" required aria-required="true">
+                <input type="text" name="nlastName" id="last_name" class="validate" pattern="^[A-z]+$" required aria-required="true" value="{{user.last_name}}">
                 <label for="first_name">Last Name</label>
             </div>
 
             <div class="input-field col s12 m1">
-                <input type="text" name="nage" id="age" class="validate" default="" pattern="^(120|[1-9]?[0-9])$">
+                <input type="text" name="nage" id="age" class="validate" default="" pattern="^(120|[1-9]?[0-9])$" value="{{user.age}}">
                 <label for="age">Age</label>
             </div>
         </div>
         <div class="row">
             <div class="input-field col s12 m4">
-                <input type="email" name="nemail" id="email" class="validate" required aria-required="true">
+                <input type="email" name="nemail" id="email" class="validate" required aria-required="true" value="{{user.email}}">
                 <label for="email">Email</label>
             </div>
-       
+
             <div class="input-field col s12 m4">
+
                 <select name="ncountry" id="country" required aria-required="true">
-                    <option value="" disabled selected>Select your country</option>                   
+                    <option id="selected" value=" " selected>Select your country</option>                   
                 </select>
             </div>
-        </div>      
-        
+        </div>
+
         <input type="submit" id="change-btn" class="btn waves-effect waves-light" onclick="" value="Save Changes">
     </form>
 </div>
+<p>NOTE: Refresh the page after form submission.TODO: ajax</p>
 {{#if message}}
 <div class="red lighten-4">{{message}}</div>
 {{/if}}
@@ -58,4 +70,19 @@
     });
 
 </script>
-<script src="../js/getCountryList.js"></script>
+
+<script>
+    var url = window.location.origin + '/country';
+    var countryID = Number($("#usercountry").text());
+    $.getJSON(url, function(countries) {        
+        $.each(countries, function(index) {
+            var option = document.createElement('option');
+            $('#country').append($(option).attr('value', countries[index].country_id).html(countries[index].country));
+            if (countryID == countries[index].country_id) {                
+                $("#usercountry").text(countries[index].country);
+            }            
+        });
+       // $('#country').val(a);
+        document.getElementById("country").value = countryID;
+    });
+</script>
