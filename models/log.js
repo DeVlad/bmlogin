@@ -9,7 +9,10 @@ var Log = {
         return connection.query('SELECT log.login_attempt FROM user INNER JOIN log ON log.user_id = user.id AND email = ?', [Email], callback);
     },
     increaseLoginAttempts: function (Email, callback) {
-        return connection.query(' UPDATE log INNER JOIN user ON log.user_id = user.id AND user.email = ? SET log.login_attempt = log.login_attempt + 1', [Email], callback);
+        return connection.query('UPDATE log INNER JOIN user ON log.user_id = user.id AND user.email = ? SET log.login_attempt = log.login_attempt + 1', [Email], callback);
+    },
+    resetLoginAttempts: function (Email, callback) {
+        return connection.query('UPDATE log INNER JOIN user ON log.user_id = user.id AND user.email = ? SET log.login_attempt = 1', [Email], callback);
     }
 };
 

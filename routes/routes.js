@@ -27,8 +27,8 @@ module.exports = function (app, passport) {
     });
 
     app.post('/login', passport.authenticate('local-login', {
-            successRedirect: '/profile',
             failureRedirect: '/login',
+            successRedirect: '/profile',            
             failureFlash: true // Allow flash messages
         }),
         function (req, res) {
