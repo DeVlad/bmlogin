@@ -41,8 +41,11 @@ module.exports = function (app, passport) {
         });
 
     app.get('/signup', function (req, res) {
+        var ctr = [{"country_id":1,"country":"Australia"},{"country_id":2,"country":"Bulgaria"},{"country_id":5,"country":"France"},{"country_id":3,"country":"Germany"},{"country_id":4,"country":"USA"}];
+        
         res.render('signup', {
-            message: req.flash('signupMessage')
+            message: req.flash('signupMessage'),
+            countries: ctr
         });
     });
 
