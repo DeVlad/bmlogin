@@ -13,6 +13,7 @@ app.use(bodyParser.json());
 
 var UserProfile = require('../models/user_profile');
 var User = require('../models/user');
+var Country = require('../models/country');
 
 module.exports = function (app, passport) {
 
@@ -28,7 +29,7 @@ module.exports = function (app, passport) {
 
     app.post('/login', passport.authenticate('local-login', {
             failureRedirect: '/login',
-            successRedirect: '/profile',            
+            successRedirect: '/profile',
             failureFlash: true // Allow flash messages
         }),
         function (req, res) {
@@ -40,12 +41,14 @@ module.exports = function (app, passport) {
             res.redirect('/');
         });
 
-    app.get('/signup', function (req, res) {
-        var ctr = [{"country_id":1,"country":"Australia"},{"country_id":2,"country":"Bulgaria"},{"country_id":5,"country":"France"},{"country_id":3,"country":"Germany"},{"country_id":4,"country":"USA"}];
-        
-        res.render('signup', {
-            message: req.flash('signupMessage'),
-            countries: ctr
+    app.get('/signup', function (req, res) {     
+        Country.getAllCountries(function (err, rows) {
+            if (err) throw err;            
+            var countryList = JSON.parse(JSON.stringify(rows)); 
+            res.render('signup', {
+                message: req.flash('signupMessage'),
+                countries: countryList
+            });
         });
     });
 
@@ -91,12 +94,10 @@ module.exports = function (app, passport) {
     );
 
     app.get('/profile', isLoggedIn, function (req, res) {
-
         res.render('profile', {
             user: req.user // get the user out of session and pass to template
         });
     });
-
 
     app.post('/profile', isLoggedIn, form(
             // TODO - better verify input and filter
@@ -123,7 +124,6 @@ module.exports = function (app, passport) {
         });
 
     app.get('/profile/password', isLoggedIn, function (req, res) {
-
         res.render('password', {
             user: req.user
         });
@@ -166,10 +166,14 @@ module.exports = function (app, passport) {
         });
 
     app.get('/profile/info', isLoggedIn, function (req, res) {
-        // TODO Get user data from db
-        //console.log("GET: INFO", req.user);
-        res.render('info', {
-            user: req.user
+        Country.getAllCountries(function (err, rows) {
+            if (err) throw err;
+            var countryList = JSON.parse(JSON.stringify(rows));
+            res.render('info', {
+                user: req.user,
+                message: req.flash('info'),
+                countries: countryList
+            });
         });
     });
 
@@ -180,7 +184,7 @@ module.exports = function (app, passport) {
             field("nfirstName").trim().required().is(/^[A-z]+$/),
             field("nlastName").trim().required().is(/^[A-z]+$/),
             field("nemail").trim().required().isEmail(),
-            field("ncountry").trim().required().isInt().is(/^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/) // id between 0-255      
+            field("country").trim().required().isInt().is(/^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/) // id between 0-255      
         ),
 
         // Express request-handler now receives filtered and validated data 
@@ -195,7 +199,7 @@ module.exports = function (app, passport) {
             }
             if (!req.form.isValid) {
                 // Handle errors 
-                //console.log(req.form.errors);
+                console.log(req.form.errors);
                 //TODO: flash messages
                 return res.redirect('/profile/info');
             }
@@ -206,9 +210,9 @@ module.exports = function (app, passport) {
                 last_name: req.body.nlastName,
                 email: req.body.nemail,
                 age: req.body.nage,
-                country_id: req.body.ncountry
+                country_id: req.body.country
             };
-            //console.log(newInfo);            
+            //console.log(newInfo);
             User.updateInfo(newInfo, function (err, rows) {
                 if (err) throw err;
             });
@@ -227,18 +231,7 @@ module.exports = function (app, passport) {
         res.render('locked', {
             title: 'Account lock'
         });
-    });
-
-    // Country form data
-    var Country = require('../models/country');
-    app.get('/country', function (req, res, next) {
-        var list = [];
-        Country.getAllCountries(function (err, rows) {
-            if (err) throw err;
-            list = JSON.stringify(rows);
-            res.send(list);
-        });
-    });
+    });    
 };
 
 // Is authenticated policy

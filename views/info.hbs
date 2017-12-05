@@ -1,12 +1,13 @@
-{{> nav }}
+{{>nav}}
 <h2>Account information </h2>
 <div class="row">
-    <div class="blue cyan lighten-5">User Id: {{user.id}}</div>
-    <div class="blue cyan lighten-5">First name: {{user.first_name}}</div>
+    <div class="blue cyan lighten-5">User ID: {{user.id}}</div>
+    <div class="blue cyan lighten-5">First name: {{ user.first_name }}</div>
     <div class="blue cyan lighten-5">Last name: {{user.last_name}}</div>
     <div class="blue cyan lighten-5">Email: {{user.email}}</div>
     <div class="blue cyan lighten-5">Age: {{user.age}}</div>
-    <div class="blue cyan lighten-5">Country: <span id="usercountry">{{user.country_id}}</span></div>
+    <div class="blue cyan lighten-5">Country ID: <span id="usercountry">{{user.country_id}}</span></div>
+    <div class="blue cyan lighten-5">Country: <span id="countryname"></span></div>
 </div>
 
 <div class="row">
@@ -15,16 +16,13 @@
     <form action="/profile/info" method="post">
         <div class="row">
             <div class="input-field col s12 m4">
-
                 <input type="text" name="nfirstName" id="first_name" class="validate" pattern="^[A-z]+$" required aria-required="true" value="{{user.first_name}}">
                 <label for="first_name">First Name</label>
             </div>
-
             <div class="input-field col s12 m4">
                 <input type="text" name="nlastName" id="last_name" class="validate" pattern="^[A-z]+$" required aria-required="true" value="{{user.last_name}}">
                 <label for="first_name">Last Name</label>
             </div>
-
             <div class="input-field col s12 m1">
                 <input type="text" name="nage" id="age" class="validate" default="" pattern="^(120|[1-9]?[0-9])$" value="{{user.age}}">
                 <label for="age">Age</label>
@@ -35,19 +33,16 @@
                 <input type="email" name="nemail" id="email" class="validate" required aria-required="true" value="{{user.email}}">
                 <label for="email">Email</label>
             </div>
-
             <div class="input-field col s12 m4">
-                <select name="ncountry" id="country" required aria-required="true">
-                    <option id="selected" value=" " selected>Select your country</option>
-                    <label for="country">Country</label>
-                </select>
+               {{>countries}}
+               <label>Country</label>
             </div>
         </div>
-
         <input type="submit" id="change-btn" class="btn waves-effect waves-light" onclick="" value="Save Changes">
     </form>
 </div>
 <p>NOTE: Refresh the page after form submission.TODO: ajax</p>
+
 {{#if message}}
 <div class="red lighten-4">{{message}}</div>
 {{/if}}
@@ -56,21 +51,15 @@
     $(document).ready(function() {
         $('select').material_select();
     });
-
 </script>
 
 <script>
-    var url = window.location.origin + '/country';
+    // Display user's country name in dropdown
     var countryID = Number($("#usercountry").text());
-    $.getJSON(url, function(countries) {        
-        $.each(countries, function(index) {
-            var option = document.createElement('option');
-            $('#country').append($(option).attr('value', countries[index].country_id).html(countries[index].country));
-            if (countryID == countries[index].country_id) {                
-                $("#usercountry").text(countries[index].country);
-            }            
-        });
-       // $('#country').val(a);
-        document.getElementById("country").value = countryID;
-    });
+    document.getElementById("country").value = countryID;
+    
+    // Dispay country name in account info
+    var select = document.getElementById("country");
+    var countryName = select.options[select.selectedIndex].text;
+    document.getElementById("countryname").innerHTML = countryName;  
 </script>
