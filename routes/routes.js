@@ -41,10 +41,10 @@ module.exports = function (app, passport) {
             res.redirect('/');
         });
 
-    app.get('/signup', function (req, res) {     
+    app.get('/signup', function (req, res) {
         Country.getAllCountries(function (err, rows) {
-            if (err) throw err;            
-            var countryList = JSON.parse(JSON.stringify(rows)); 
+            if (err) throw err;
+            var countryList = JSON.parse(JSON.stringify(rows));
             res.render('signup', {
                 message: req.flash('signupMessage'),
                 countries: countryList
@@ -178,7 +178,7 @@ module.exports = function (app, passport) {
     });
 
     app.post(
-        '/profile/info',
+        '/profile/info', isLoggedIn,
         // Form filter and validation        
         form(
             field("nfirstName").trim().required().is(/^[A-z]+$/),
@@ -199,7 +199,7 @@ module.exports = function (app, passport) {
             }
             if (!req.form.isValid) {
                 // Handle errors 
-                console.log(req.form.errors);
+                //console.log(req.form.errors);
                 //TODO: flash messages
                 return res.redirect('/profile/info');
             }
@@ -222,6 +222,12 @@ module.exports = function (app, passport) {
         }
     );
 
+    app.get('/profile/admin', isLoggedIn, isAdmin, function (req, res) {
+        res.render('admin', {
+            user: req.user
+        });
+    });
+
     app.get('/logout', function (req, res) {
         req.logout();
         res.redirect('/');
@@ -231,7 +237,12 @@ module.exports = function (app, passport) {
         res.render('locked', {
             title: 'Account lock'
         });
-    });    
+    });
+
+    // Return 404 on missing pages
+    app.get('*', function (req, res) {
+        res.status(404).send('Error: 404. Page not found !');
+    });
 };
 
 // Is authenticated policy
@@ -242,4 +253,12 @@ function isLoggedIn(req, res, next) {
         return next();
     // if user is not logged redirect to home page
     res.redirect('/');
+}
+
+function isAdmin(req, res, next) {
+    // User witch id 1 is the admin
+    if (req.user.id === 1)
+        return next();
+    // is not admin redirect to profile
+    res.redirect('/profile');
 }
